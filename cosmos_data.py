@@ -51,6 +51,20 @@ def crop_and_downsample(galaxy_images, n_pixels: int = 32):
         
     return np.array(galaxy_images_cropped_downsampled)
 
-def read_data(path_to_data, n_pixels=32):
+    
+def remove_noisy_images(images, ):
+    max_values = np.max(images, axis=(1,2))
+    median_values = np.median(images, axis=(1,2))
+    snr = max_values / median_values
+    threshold = np.mean(snr) - 0.25*np.std(snr) 
+    mask = snr > threshold
+    cleaned_images = images[mask]
+    return cleaned_images
+
+def read_data(path_to_data, n_pixels=32, remove_noisy=True,):
     galaxy_images = read_raw_data(path_to_data)
-    return crop_and_downsample(galaxy_images, n_pixels=n_pixels)
+    imgs = crop_and_downsample(galaxy_images, n_pixels=n_pixels)
+    if remove_noisy:
+        return remove_noisy_images(imgs)
+    return imgs
+
